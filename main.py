@@ -20,33 +20,32 @@ import pygame
 import collision
 
 global CHARACTER_HEIGHT
-CHARACTER_HEIGHT = 60
 global CHARACTER_WIDTH
+CHARACTER_HEIGHT = 60
 CHARACTER_WIDTH = 40
 
 global BULLET_WIDTH
-BULLET_WIDTH = 4
 global BULLET_HEIGHT
-BULLET_HEIGHT = 4
 global BULLET_VELOCITY
+BULLET_WIDTH = 4
+BULLET_HEIGHT = 4
 BULLET_VELOCITY = 5
 
 global ENEMY_BULLET_WIDTH
 global ENEMY_BULLET_HEIGHT
-
 ENEMY_BULLET_WIDTH = 2
 ENEMY_BULLET_HEIGHT = 2
 
 global ENEMY_WIDTH
-ENEMY_WIDTH = 15
 global ENEMY_HEIGHT
-ENEMY_HEIGHT = 15
 global ENEMY_VELOCITY
+ENEMY_WIDTH = 15
+ENEMY_HEIGHT = 15
 ENEMY_VELOCITY = 2
 
 global SCOREBOARD_CHAR_WIDTH
-SCOREBOARD_CHAR_WIDTH = 20
 global SCOREBOARD_CHAR_HEIGHT
+SCOREBOARD_CHAR_WIDTH = 20
 SCOREBOARD_CHAR_HEIGHT = 26
 
 global counter0
@@ -133,6 +132,7 @@ def gameLoop(win, WINDOW_MAX_WIDTH, WINDOW_MAX_HEIGHT):
     
     bulletList = []
     enemyList = []
+    enemyBulletList = []
     
     while run:
         pygame.time.delay(15)
@@ -204,6 +204,17 @@ def gameLoop(win, WINDOW_MAX_WIDTH, WINDOW_MAX_HEIGHT):
                         run = False
                         break
                 if run == False: break
+            # Determine if enemy will fire the lasers
+            bulletDiceRoll = random.randint(1, 100)
+            enemyGunPosition = (enemyX + (ENEMY_WIDTH / 2), enemyY + ENEMY_BULLET_HEIGHT)
+            if bulletDiceRoll == 1:
+                enemyBulletX, enemyBulletY = enemyGunPosition
+                enemyBulletYVelocity = ENEMY_VELOCITY + random.randint(2, 4)
+                enemyBulletXVelocity = random.randint(-2, 2)
+                enemyBulletList.append((enemyBulletX, 
+                                        enemyBulletY, 
+                                        enemyBulletXVelocity, 
+                                        enemyBulletYVelocity))
             pygame.draw.rect(win, (0, 255, 0), (enemyX, enemyY, ENEMY_WIDTH, ENEMY_HEIGHT))
             enemyList[enemyIndex] = (enemyX, enemyY)
             enemyIndex += 1
@@ -219,14 +230,42 @@ def gameLoop(win, WINDOW_MAX_WIDTH, WINDOW_MAX_HEIGHT):
             bulletList[bulletIndex] = (bulletX, bulletY)
             bulletIndex += 1
             
-        for i in bulletRemoveList:
-            bulletList.pop(i)
+        # Draw the enemy bullets
+        enemyBulletIndex = 0
+        for enemyBulletX, enemyBulletY, enemyBulletXVelocity, enemyBulletYVelocity in enemyBulletList:
+            enemyBulletX += enemyBulletXVelocity
+            enemyBulletY += enemyBulletYVelocity
+            pygame.draw.rect(win, (255, 255, 0), (enemyBulletX, enemyBulletY, 
+                                                  ENEMY_BULLET_WIDTH, ENEMY_BULLET_HEIGHT))
+            enemyBulletList[enemyBulletIndex] = (enemyBulletX, enemyBulletY,
+                                                 enemyBulletXVelocity, enemyBulletYVelocity)
+            # Determine if bullet has hit the ship
+            if enemyBulletY > shipY and enemyBulletY < (shipY + CHARACTER_HEIGHT):
+                relativeX = enemyBulletX - shipX
+                relativeY = enemyBulletY - shipY 
+                shipSlope = (CHARACTER_WIDTH / 2) / float(CHARACTER_HEIGHT)
+                leftX = (CHARACTER_WIDTH / 2) - (relativeY * shipSlope)
+                rightX = (CHARACTER_WIDTH / 2) + (relativeY * shipSlope)
+                print(relativeX, leftX, rightX)
+                if (relativeX > leftX and relativeX < rightX):
+                    print("COLLISION!!!")
+                    run = False
+            
+            enemyBulletIndex += 1
+        try:
+            for i in bulletRemoveList:
+                bulletList.pop(i)
+        except IndexError:
+            print("Failed to remove bullet!")
         
-        for i in enemyRemoveList:
-            enemyList.pop(i)
+        try: 
+            for i in enemyRemoveList:
+                enemyList.pop(i)
+        except IndexError:
+            print("Failed to remove enemy!")
             
         #Draw the score
-        print((score / 1000) % 10, (score / 100) % 10, (score / 10) % 10, score % 10)
+        #print((score / 1000) % 10, (score / 100) % 10, (score / 10) % 10, score % 10)
         
         win.blit(scoreboard(score), (WINDOW_MAX_WIDTH - (SCOREBOARD_CHAR_WIDTH * 5), 50))
         
@@ -251,10 +290,10 @@ if __name__ == "__main__":
     pygame.mouse.set_visible(False)
     
     score = -1
+    win.fill((0, 0, 0))
+    win.blit(newgame, (0, 0))
 
     while True:
-        win.fill((0, 0, 0))
-        win.blit(newgame, (0, 0))
         if score >= 0:
             yourscoreX = 125
             yourscoreY = 160

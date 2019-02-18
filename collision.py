@@ -1,5 +1,8 @@
 #!/usr/bin/env python2
 
+# A program to determine if lines intersect
+# See https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+# for details of below formula
 
 def orientation(p, q, r):
     value = ((q[1] - p[1]) * (r[0] - q[0])) - ((q[0] - p[0]) * (r[1] - q[1]))
