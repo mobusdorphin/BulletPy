@@ -283,6 +283,7 @@ if __name__ == "__main__":
     
     newgame = pygame.image.load("main.png")
     yourscore = pygame.image.load("yourscore.png")
+    directions = pygame.image.load("directions.png")
 
     win = pygame.display.set_mode((WINDOW_MAX_WIDTH, WINDOW_MAX_HEIGHT))
 
@@ -298,6 +299,8 @@ if __name__ == "__main__":
             yourscoreX = 125
             yourscoreY = 160
             win.blit(yourscore, (yourscoreX, yourscoreY))
+            directionsY = 520
+            win.blit(directions, (0, directionsY))
             scoreboardX = (WINDOW_MAX_WIDTH / 2) - (SCOREBOARD_CHAR_WIDTH * 2)
             scoreboardY = (yourscoreY + 50)
             win.blit(scoreboard(score), (scoreboardX, scoreboardY))
